@@ -1,0 +1,10 @@
+{
+  "name": "movilidad-mundo-paraguay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Solicitud de anticipo y rendición de gastos de movilidad — Mundo Paraguay S.A.",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.1"
+  }
+}
