@@ -3,13 +3,13 @@
 Herramienta web para **solicitar anticipos** y **rendir gastos** de movilidad por uso de vehículo propio. Cada solicitud o rendición pasa por un circuito de aprobación:
 
 ```
-Vendedor  →  Analista comercial  →  Administración  →  Aprobada  →  Pagada / reintegrada
-   ↑               │                     │
-   └── devuelta ───┴─────────────────────┘      (o rechazada: cierra el trámite)
+Vendedor  →  Control de gestión  →  Administración  →  Aprobada  →  Pagada / reintegrada
+   ↑                │                      │
+   └── devuelta ────┴──────────────────────┘      (o rechazada: cierra el trámite)
 ```
 
 - **Vendedor**: carga la solicitud de anticipo o la rendición de gastos (recorrido, clientes visitados, peajes y viáticos por día). En una rendición, además sube las **fotos de sus facturas**, que son obligatorias para enviarla. Puede guardarla como borrador y la envía a revisión. Si se la devuelven, la corrige y la reenvía.
-- **Analista comercial**: revisa todo lo cargado y las fotos, marca la lista de verificación y después **aprueba** (pasa a Administración), **devuelve** al vendedor con un comentario o **rechaza**.
+- **Control de gestión**: revisa todo lo cargado y las fotos, marca la lista de verificación y después **aprueba** (pasa a Administración), **devuelve** al vendedor con un comentario o **rechaza**.
 - **Administración**: vuelve a verificar y hace la **aprobación final**, o devuelve o rechaza. Después registra el **pago del anticipo o el reintegro**, con importe, fecha y referencia, y así se cierra el circuito. También administra los **Parámetros**: funcionarios, roles, PIN, vehículos y precios de combustible.
 
 Cada paso queda registrado en el **historial del trámite**, con fecha, persona, rol y comentario.
@@ -70,7 +70,7 @@ La primera vez que alguien entra, se crean estos usuarios con el **PIN provisori
 | Usuario | Nombre | Rol |
 |---|---|---|
 | `admin` | Administración | Administración |
-| `analista` | Analista Comercial | Analista comercial |
+| `control` | Control de Gestión | Control de gestión |
 | `ejara` | Enrique Jara | Vendedor |
 | `icolman` | Ignacio Colmán | Vendedor |
 | `fflores` | Fredy Flores | Vendedor |
@@ -79,11 +79,13 @@ La primera vez que alguien entra, se crean estos usuarios con el **PIN provisori
 
 **Pasos recomendados:**
 1. Ingresá como `admin` y cambiá el PIN.
-2. En **Parámetros**, cargá los nombres reales del analista comercial y de Administración. Podés renombrar los usuarios, agregar personas y asignar a cada una su rol y un PIN provisorio.
+2. En **Parámetros**, cargá los nombres reales de Control de gestión y de Administración. Podés renombrar los usuarios, agregar personas y asignar a cada una su rol y un PIN provisorio.
 3. Revisá los vehículos (marca, modelo, combustible, consumo) y los precios de combustible vigentes, y después tocá **Guardar parámetros**.
 4. Pasale a cada persona la dirección del sitio, su usuario y su PIN provisorio.
 
 Para quitarle el acceso a alguien sin perder su historial, desmarcá **Activo**.
+
+> **Cambio de rol (29/09/2026):** el rol "Analista comercial" pasó a llamarse **"Control de gestión"**. En un sitio que ya estaba funcionando, la herramienta convierte sola los datos guardados: el usuario con rol Analista pasa a Control de gestión y las solicitudes pendientes del analista quedan pendientes de Control de gestión. El **nombre de usuario** existente (por ejemplo `analista`) y su PIN no cambian; si querés, renombralo desde **Parámetros**.
 
 ---
 

@@ -427,7 +427,7 @@
   /* Estado */
   .pill-est{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.68rem;font-weight:700;letter-spacing:.2px;white-space:nowrap;}
   .est-BORRADOR{background:#EEF1F5;color:#5B6B7F;}
-  .est-PENDIENTE_ANALISTA{background:#FFF3DC;color:#A66F00;}
+  .est-PENDIENTE_CONTROL{background:#FFF3DC;color:#A66F00;}
   .est-DEVUELTA{background:#FFE9D6;color:#B4540A;}
   .est-PENDIENTE_ADMIN{background:#E6F4FC;color:#1C6FA8;}
   .est-APROBADA{background:#E4F6EC;color:var(--verde);}
@@ -504,7 +504,7 @@
   .timeline li:last-child::before{display:none;}
   .timeline .tl-dot{width:14px;height:14px;border-radius:50%;background:var(--azul);margin-top:3px;}
   .timeline .tl-dot.VENDEDOR{background:var(--azul-medio);}
-  .timeline .tl-dot.ANALISTA{background:var(--ambar);}
+  .timeline .tl-dot.CONTROL{background:var(--ambar);}
   .timeline .tl-dot.ADMIN{background:var(--verde);}
   .timeline .tl-t{font-size:.82rem;font-weight:700;color:var(--azul-oscuro);}
   .timeline .tl-m{font-size:.72rem;color:var(--gris);}
@@ -534,7 +534,7 @@
   #tabla-usuarios td:nth-child(8) select{min-width:150px;}
   #tabla-usuarios td:nth-child(10) input{min-width:100px;}
   .rol-ADMIN{background:#E4F6EC;color:var(--verde);}
-  .rol-ANALISTA{background:#FFF3DC;color:#A66F00;}
+  .rol-CONTROL{background:#FFF3DC;color:#A66F00;}
   .rol-VENDEDOR{background:#E6F4FC;color:var(--azul-medio);}
 
   @media print{

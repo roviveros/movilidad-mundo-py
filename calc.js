@@ -6,13 +6,13 @@ export const AA_POR_KM = 150; // Gs. por km, solo de octubre a abril
 
 export const ROLES = {
   VENDEDOR: "Vendedor",
-  ANALISTA: "Analista comercial",
+  CONTROL: "Control de gestión",
   ADMIN: "Administración",
 };
 
 export const ESTADOS = {
   BORRADOR: "Borrador",
-  PENDIENTE_ANALISTA: "Pendiente analista comercial",
+  PENDIENTE_CONTROL: "Pendiente Control de gestión",
   DEVUELTA: "Devuelta al vendedor",
   PENDIENTE_ADMIN: "Pendiente Administración",
   APROBADA: "Aprobada",

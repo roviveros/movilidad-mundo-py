@@ -96,12 +96,25 @@ const SEED_COMBUSTIBLES = [
 async function cargarConfig() {
   const store = datos();
   let cfg = await store.get("config", { type: "json" });
-  if (cfg) return cfg;
+  if (cfg) {
+    // Compatibilidad: el rol "Analista comercial" (ANALISTA) pasó a llamarse "Control de gestión" (CONTROL).
+    if (cfg.funcionarios.some((f) => f.rol === "ANALISTA")) {
+      cfg.funcionarios.forEach((f) => {
+        if (f.rol !== "ANALISTA") return;
+        f.rol = "CONTROL";
+        if (f.cargo === "ANALISTA COMERCIAL") f.cargo = "CONTROL DE GESTIÓN";
+        if (f.nombre === "Analista Comercial") f.nombre = "Control de Gestión";
+      });
+      cfg.actualizado = ahora();
+      await store.setJSON("config", cfg);
+    }
+    return cfg;
+  }
   // Primera ejecución: se crean los parámetros iniciales y los PIN provisorios.
   let id = 1;
   const funcionarios = [
     ...SEED_VEHICULOS.map((v) => ({ id: id++, cargo: "VENDEDOR/A", rol: "VENDEDOR", activo: true, ...v })),
-    { id: id++, usuario: "analista", nombre: "Analista Comercial", cargo: "ANALISTA COMERCIAL", rol: "ANALISTA", activo: true, marca: "", modelo: "", combustible: "", consumo: 0 },
+    { id: id++, usuario: "control", nombre: "Control de Gestión", cargo: "CONTROL DE GESTIÓN", rol: "CONTROL", activo: true, marca: "", modelo: "", combustible: "", consumo: 0 },
     { id: id++, usuario: "admin", nombre: "Administración", cargo: "ADMINISTRACIÓN", rol: "ADMIN", activo: true, marca: "", modelo: "", combustible: "", consumo: 0 },
   ];
   let cid = 1;
@@ -130,8 +143,18 @@ function vehiculoDe(cfg, usuario) {
 /* -------------------------------------------------------------- solicitudes */
 
 const INDICE = "indice";
-const cargarIndice = async () => (await datos().get(INDICE, { type: "json" })) || [];
-const cargarSolicitud = async (id) => datos().get(`sol/${id}`, { type: "json" });
+// Compatibilidad con registros guardados antes del cambio de rol Analista comercial → Control de gestión.
+function migrarRol(s) {
+  if (!s) return s;
+  if (s.estado === "PENDIENTE_ANALISTA") s.estado = "PENDIENTE_CONTROL";
+  (s.historial || []).forEach((h) => {
+    if (h.rol === "ANALISTA") h.rol = "CONTROL";
+    if (h.accion === "Envió a revisión del analista comercial") h.accion = "Envió a revisión de Control de gestión";
+  });
+  return s;
+}
+const cargarIndice = async () => ((await datos().get(INDICE, { type: "json" })) || []).map(migrarRol);
+const cargarSolicitud = async (id) => migrarRol(await datos().get(`sol/${id}`, { type: "json" }));
 
 function resumen(s) {
   return {
@@ -383,10 +406,10 @@ export default async (req) => {
           if (s.totales.total <= 0) fail(400, "La solicitud no tiene importes: cargá al menos un recorrido, peaje o viático.");
           if (s.tipo === "rendicion" && !(s.fotos || []).length) fail(400, "Para enviar una rendición tenés que subir las fotos de tus facturas.");
           const reenvio = s.estado === "DEVUELTA";
-          s.estado = "PENDIENTE_ANALISTA";
-          registrar(s, user, reenvio ? "Corrigió y reenvió a revisión" : "Envió a revisión del analista comercial", coment);
+          s.estado = "PENDIENTE_CONTROL";
+          registrar(s, user, reenvio ? "Corrigió y reenvió a revisión" : "Envió a revisión de Control de gestión", coment);
         } else if (accion === "aprobar") {
-          if (user.rol === "ANALISTA" && s.estado === "PENDIENTE_ANALISTA") {
+          if (user.rol === "CONTROL" && s.estado === "PENDIENTE_CONTROL") {
             if (!checklistCompleto(checklist)) fail(400, "Marcá todas las verificaciones antes de aprobar.");
             s.estado = "PENDIENTE_ADMIN";
             registrar(s, user, "Verificó y aprobó · pasa a Administración", coment);
@@ -396,7 +419,7 @@ export default async (req) => {
             registrar(s, user, s.tipo === "rendicion" ? "Aprobó la rendición" : "Aprobó el anticipo", coment);
           } else fail(409, "Esta solicitud no está pendiente de tu aprobación.");
         } else if (accion === "devolver" || accion === "rechazar") {
-          const turno = (user.rol === "ANALISTA" && s.estado === "PENDIENTE_ANALISTA") || (user.rol === "ADMIN" && s.estado === "PENDIENTE_ADMIN");
+          const turno = (user.rol === "CONTROL" && s.estado === "PENDIENTE_CONTROL") || (user.rol === "ADMIN" && s.estado === "PENDIENTE_ADMIN");
           if (!turno) fail(409, "Esta solicitud no está pendiente de tu revisión.");
           if (coment.length < 5) fail(400, accion === "devolver" ? "Escribí qué tiene que corregir el vendedor." : "Escribí el motivo del rechazo.");
           s.estado = accion === "devolver" ? "DEVUELTA" : "RECHAZADA";
