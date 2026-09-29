@@ -1,4 +1,4 @@
-// Movilidad Mundo Paraguay S.A. — interfaz por rol (Vendedor · Analista comercial · Administración)
+// Movilidad Mundo Paraguay S.A. — interfaz por rol (Vendedor · Control de gestión · Administración)
 import {
   DIAS, ROLES, ESTADOS, TIPOS, calcularDia, calcularSolicitud, diaVacio, fmtGs, precioFinal, semanaMes, AA_POR_KM,
 } from "./calc.js";
@@ -161,7 +161,7 @@ function modalCambiarPin(obligatorio) {
 function tabsDeRol() {
   const r = S.user.rol;
   if (r === "VENDEDOR") return { params: [], main: [["editor", "🧮 Solicitud / Rendición"], ["historial", "📊 Resumen Histórico"]] };
-  if (r === "ANALISTA") return { params: [], main: [["bandeja", "📥 Bandeja de revisión"], ["historial", "📊 Resumen Histórico"]] };
+  if (r === "CONTROL") return { params: [], main: [["bandeja", "📥 Bandeja de revisión"], ["historial", "📊 Resumen Histórico"]] };
   return { params: [["parametros", "⚙️ Parámetros"]], main: [["bandeja", "📥 Bandeja de revisión"], ["historial", "📊 Resumen Histórico"]] };
 }
 
@@ -187,13 +187,13 @@ function renderShell() {
     </div>
   </header>
   <main id="main"></main>
-  <footer class="pie">Mundo Paraguay S.A. · Herramienta interna de movilidad · Circuito: Vendedor → Analista comercial → Administración</footer>`;
+  <footer class="pie">Mundo Paraguay S.A. · Herramienta interna de movilidad · Circuito: Vendedor → Control de gestión → Administración</footer>`;
 }
 
 function actualizarContadores() {
   const set = (id, n) => { const el = $(`count-${id}`); if (el) { el.textContent = n; el.hidden = !n; } };
   const r = S.user.rol;
-  if (r === "ANALISTA") set("bandeja", S.lista.filter((s) => s.estado === "PENDIENTE_ANALISTA").length);
+  if (r === "CONTROL") set("bandeja", S.lista.filter((s) => s.estado === "PENDIENTE_CONTROL").length);
   if (r === "ADMIN") set("bandeja", S.lista.filter((s) => s.estado === "PENDIENTE_ADMIN" || s.estado === "APROBADA").length);
   if (r === "VENDEDOR") set("historial", S.lista.filter((s) => s.estado === "DEVUELTA").length);
 }
@@ -667,12 +667,12 @@ function renderHistorial() {
 
 function renderBandeja() {
   const r = S.user.rol;
-  const pend = S.lista.filter((s) => s.estado === (r === "ANALISTA" ? "PENDIENTE_ANALISTA" : "PENDIENTE_ADMIN"));
+  const pend = S.lista.filter((s) => s.estado === (r === "CONTROL" ? "PENDIENTE_CONTROL" : "PENDIENTE_ADMIN"));
   const pagos = r === "ADMIN" ? S.lista.filter((s) => s.estado === "APROBADA") : [];
   $("main").innerHTML = `
   <section>
     <div class="card">
-      <div class="card-head"><h2>📥 Pendientes de tu revisión</h2><span class="sub">${r === "ANALISTA" ? "Enviadas por los vendedores" : "Ya verificadas por el analista comercial"}</span></div>
+      <div class="card-head"><h2>📥 Pendientes de tu revisión</h2><span class="sub">${r === "CONTROL" ? "Enviadas por los vendedores" : "Ya verificadas por Control de gestión"}</span></div>
       <div class="card-body">
         ${tablaLista(pend, "No tenés solicitudes pendientes de revisión. 🎉")}
         <div class="acciones-row"><button class="btn btn-outline" onclick="App.recargar()">🔄 Actualizar</button></div>
@@ -688,11 +688,11 @@ function renderBandeja() {
 
 /* ============================================================ DETALLE / REVISIÓN */
 function flujoHTML(s) {
-  const pasos = ["Vendedor", "Analista comercial", "Administración", s.estado === "PAGADA" ? "Pagada" : s.estado === "RECHAZADA" ? "Rechazada" : "Aprobada"];
+  const pasos = ["Vendedor", "Control de gestión", "Administración", s.estado === "PAGADA" ? "Pagada" : s.estado === "RECHAZADA" ? "Rechazada" : "Aprobada"];
   let actual = 0, hechos = 0, error = -1;
   switch (s.estado) {
     case "BORRADOR": case "DEVUELTA": actual = 0; hechos = 0; break;
-    case "PENDIENTE_ANALISTA": actual = 1; hechos = 1; break;
+    case "PENDIENTE_CONTROL": actual = 1; hechos = 1; break;
     case "PENDIENTE_ADMIN": actual = 2; hechos = 2; break;
     case "APROBADA": actual = 3; hechos = 3; break;
     case "PAGADA": actual = -1; hechos = 4; break;
@@ -719,7 +719,7 @@ function timelineHTML(s) {
 
 function turnoDe(s) {
   const r = S.user.rol;
-  return (r === "ANALISTA" && s.estado === "PENDIENTE_ANALISTA") || (r === "ADMIN" && s.estado === "PENDIENTE_ADMIN");
+  return (r === "CONTROL" && s.estado === "PENDIENTE_CONTROL") || (r === "ADMIN" && s.estado === "PENDIENTE_ADMIN");
 }
 
 function revisionHTML(s) {
@@ -731,7 +731,7 @@ function revisionHTML(s) {
     ["viaticos", "Viáticos verificados"],
     ...(rend ? [["comprobantes", "Fotos de facturas verificadas y coinciden con los montos"]] : []),
   ];
-  const aprobar = r === "ANALISTA" ? "✅ Aprobar y pasar a Administración" : rend ? "✅ Aprobar rendición" : "✅ Aprobar anticipo";
+  const aprobar = r === "CONTROL" ? "✅ Aprobar y pasar a Administración" : rend ? "✅ Aprobar rendición" : "✅ Aprobar anticipo";
   return `
   <div class="revision">
     <div class="rev-head">🔍 Revisión · ${esc(ROLES[r])}</div>
@@ -887,7 +887,7 @@ function renderParametros() {
             </tr>`).join("")}
           </tbody>
         </table>
-        <div class="nota">🔑 El <strong>rol</strong> define qué ve cada persona: el <strong>vendedor</strong> carga solicitudes y rendiciones, el <strong>analista comercial</strong> las verifica y <strong>Administración</strong> las aprueba y registra el pago. Al asignar un <strong>PIN nuevo</strong>, la persona deberá cambiarlo en su primer ingreso. Para quitar el acceso sin perder el historial, desmarcá <strong>Activo</strong>.</div>
+        <div class="nota">🔑 El <strong>rol</strong> define qué ve cada persona: el <strong>vendedor</strong> carga solicitudes y rendiciones, <strong>Control de gestión</strong> las verifica y <strong>Administración</strong> las aprueba y registra el pago. Al asignar un <strong>PIN nuevo</strong>, la persona deberá cambiarlo en su primer ingreso. Para quitar el acceso sin perder el historial, desmarcá <strong>Activo</strong>.</div>
       </div>
     </div>
 
@@ -976,14 +976,14 @@ const App = {
     const t = calcularSolicitud(S.sol, vehiculoActual());
     const ok = await confirmar({
       titulo: rend ? "Enviar rendición a revisión" : "Enviar solicitud de anticipo a revisión",
-      texto: `Total ${rend ? "rendido" : "solicitado"}: <strong>Gs. ${fmtGs(t.total)}</strong>.<br>Pasará al analista comercial y ya no podrás modificarla, salvo que te la devuelvan para corregir.`,
+      texto: `Total ${rend ? "rendido" : "solicitado"}: <strong>Gs. ${fmtGs(t.total)}</strong>.<br>Pasará a Control de gestión y ya no podrás modificarla, salvo que te la devuelvan para corregir.`,
       ok: "Enviar",
     });
     if (!ok) return;
     try {
       await guardarSol({ silencioso: true });
       const r = await api("POST", `solicitudes/${S.sol.id}/accion`, { accion: "enviar" });
-      toast(`${r.numero} enviada al analista comercial.`);
+      toast(`${r.numero} enviada a Control de gestión.`);
       S.sol = null;
       await cargarLista();
       go("historial");
@@ -1068,7 +1068,7 @@ const App = {
       $("rev-coment").focus(); return;
     }
     const textos = {
-      aprobar: S.user.rol === "ANALISTA" ? ["Aprobar y pasar a Administración", `La ${esc(s.numero)} pasará a Administración para su aprobación final.`, "btn-verde", "Aprobar"]
+      aprobar: S.user.rol === "CONTROL" ? ["Aprobar y pasar a Administración", `La ${esc(s.numero)} pasará a Administración para su aprobación final.`, "btn-verde", "Aprobar"]
         : ["Aprobación final", `Se aprobará la ${esc(s.numero)} por <strong>Gs. ${fmtGs(s.totales.total)}</strong>. Luego podrás registrar el pago.`, "btn-verde", "Aprobar"],
       devolver: ["Devolver al vendedor", `La ${esc(s.numero)} vuelve a ${esc(s.vendedorNombre)} para que la corrija y la reenvíe.`, "btn-naranja", "Devolver"],
       rechazar: ["Rechazar", `La ${esc(s.numero)} quedará <strong>rechazada</strong> y se cierra el trámite. El vendedor tendrá que cargar una nueva si corresponde.`, "btn-rojo-solid", "Rechazar"],
